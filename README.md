@@ -1,4 +1,4 @@
-# IncreaseMaxStack
+# Increase Max Stack
 
 A BepInEx plugin for Dungeon Settlers that lets you change item stack sizes globally or per item.
 
@@ -15,11 +15,11 @@ A BepInEx plugin for Dungeon Settlers that lets you change item stack sizes glob
 
 Edit `BepInEx/config/IncreaseMaxStack.cfg`:
 
-**`[General] EnableGlobalMaxStack`** - if `true`, every item without a specific override uses `GlobalMaxStack`.
+**`EnableGlobalMaxStack`** - if `true`, every item without a specific override uses `GlobalMaxStack`.
 
-**`[General] GlobalMaxStack`** - the global stack size. Default `999`.
+**`GlobalMaxStack`** - the global stack size. Default `999`.
 
-**`[Individual Item Stacks] ItemStackOverrides`** - semicolon-separated `ItemId=Amount` pairs, e.g.:
+**`ItemStackOverrides`** - semicolon-separated `ItemId=Amount` pairs, e.g.:
 
 ```
 ItemStackOverrides = ITEM_Straw=250;ITEM_LumaLog=50
