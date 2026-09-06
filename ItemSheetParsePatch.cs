@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using HarmonyLib;
 using Il2CppSystem.IO;
 using Refactor.Util;
@@ -13,31 +14,31 @@ public class ItemSheetParsePatch
     {
         var allItems = __instance?.GetAll();
         if (allItems == null) return;
-        
-        Plugin.PluginConfig.SaveOnConfigSet = false;
-        
-        foreach (var itemData in allItems.ToArray()) 
+
+        var matchedKeys = new HashSet<string>();
+
+        foreach (var itemData in allItems.ToArray())
         {
             if (string.IsNullOrEmpty(itemData.Key)) continue;
-            
-            var itemStackConfig = Plugin.PluginConfig.Bind(
-                "Individual Item Stacks", 
-                itemData.Key, 
-                -1, 
-                $"Vanilla default is {itemData.MaxStack}."
-            );
-            
-            if (itemStackConfig.Value != -1)
+
+            if (Plugin.Overrides.TryGetValue(itemData.Key, out var overrideValue))
             {
-                itemData.MaxStack = itemStackConfig.Value;
+                itemData.MaxStack = overrideValue;
+                matchedKeys.Add(itemData.Key);
             }
             else if (Plugin.EnableGlobalMaxStack)
             {
                 itemData.MaxStack = Plugin.GlobalMaxStack;
             }
         }
-        
-        Plugin.PluginConfig.Save();
-        Plugin.PluginConfig.SaveOnConfigSet = true;
+
+        foreach (var key in Plugin.Overrides.Keys)
+        {
+            if (!matchedKeys.Contains(key))
+            {
+                Plugin.Log.LogWarning(
+                    $"ItemStackOverrides contains '{key}', but no item with that ID was found. Check spelling/casing against the wiki.");
+            }
+        }
     }
 }
