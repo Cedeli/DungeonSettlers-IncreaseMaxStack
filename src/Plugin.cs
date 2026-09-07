@@ -10,6 +10,7 @@ using HarmonyLib;
 namespace IncreaseMaxStack;
 
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
+[BepInProcess("DungeonSettlers.exe")]
 public class Plugin : BasePlugin
 {
     internal static new ManualLogSource Log;
