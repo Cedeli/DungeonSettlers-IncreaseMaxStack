@@ -28,7 +28,10 @@ public class ItemSheetParsePatch
             }
             else if (Plugin.EnableGlobalMaxStack)
             {
-                itemData.MaxStack = Plugin.GlobalMaxStack;
+                if (!Plugin.ExcludedItemTypes.Contains(itemData.ItemType))
+                {
+                    itemData.MaxStack = Plugin.GlobalMaxStack;
+                }
             }
         }
 

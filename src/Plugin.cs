@@ -6,6 +6,7 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
+using Refactor;
 
 namespace IncreaseMaxStack;
 
@@ -21,13 +22,15 @@ public class Plugin : BasePlugin
     private static ConfigEntry<int> _globalMaxStack;
     private static ConfigEntry<bool> _enableGlobalMaxStack;
     private static ConfigEntry<string> _itemStackOverridesRaw;
+    private static ConfigEntry<string> _excludedItemTypesRaw;
 
     private static Dictionary<string, int> _overrides = new();
+    private static HashSet<ItemType> _excludedItemTypes = new();
 
     public static int GlobalMaxStack => _globalMaxStack.Value;
     public static bool EnableGlobalMaxStack => _enableGlobalMaxStack.Value;
-
     public static IReadOnlyDictionary<string, int> Overrides => _overrides;
+    public static HashSet<ItemType> ExcludedItemTypes => _excludedItemTypes;
 
     public override void Load()
     {
@@ -47,6 +50,13 @@ public class Plugin : BasePlugin
             )
         );
 
+        _excludedItemTypesRaw = Config.Bind("General", "ExcludedItemTypes", "Equipment",
+            new ConfigDescription(
+                "Comma-separated list of ItemTypes to exclude from the global max stack. " +
+                "Valid options: Ammo, Consumable, Equipment, Food, Miscellaneous, Resource."
+            )
+        );
+
         _itemStackOverridesRaw = Config.Bind("Individual Item Stacks", "ItemStackOverrides", "",
             new ConfigDescription(
                 "Semicolon-separated list of ItemId=MaxStack pairs, e.g. ITEM_WildLongGrass=100;ITEM_LumaLog=50. " +
@@ -56,6 +66,9 @@ public class Plugin : BasePlugin
 
         ParseOverrides(_itemStackOverridesRaw.Value);
         _itemStackOverridesRaw.SettingChanged += (_, _) => ParseOverrides(_itemStackOverridesRaw.Value);
+
+        ParseExcludedTypes(_excludedItemTypesRaw.Value);
+        _excludedItemTypesRaw.SettingChanged += (_, _) => ParseExcludedTypes(_excludedItemTypesRaw.Value);
 
         _harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), MyPluginInfo.PLUGIN_GUID);
 
@@ -107,6 +120,27 @@ public class Plugin : BasePlugin
         }
 
         _overrides = result;
+    }
+
+    private static void ParseExcludedTypes(string raw)
+    {
+        _excludedItemTypes.Clear();
+
+        if (string.IsNullOrWhiteSpace(raw)) return;
+
+        var entries = raw.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        foreach (var entry in entries)
+        {
+            if (Enum.TryParse<ItemType>(entry, true, out var parsedType))
+            {
+                _excludedItemTypes.Add(parsedType);
+            }
+            else
+            {
+                Log.LogWarning($"Invalid ItemType in ExcludedItemTypes config: '{entry}'. Ignored.");
+            }
+        }
     }
 
     public override bool Unload()
