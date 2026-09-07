@@ -19,6 +19,8 @@ Edit `BepInEx/config/IncreaseMaxStack.cfg`:
 
 **`GlobalMaxStack`** - the global stack size. Default `999`.
 
+**`ExcludedItemTypes`** - comma-separated list of item types to exclude from the global max stack. Valid options: `Ammo, Consumable, Equipment, Food, Miscellaneous, Resource`. Default `Equipment`.
+
 **`ItemStackOverrides`** - semicolon-separated `ItemId=Amount` pairs, e.g.:
 
 ```
